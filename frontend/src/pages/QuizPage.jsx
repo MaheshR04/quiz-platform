@@ -9,7 +9,8 @@ function QuizPage() {
 
   const [quiz, setQuiz] = useState(null);
   const [answers, setAnswers] = useState([]);
-  const [timeLeft, setTimeLeft] = useState(60); // 60 seconds timer
+  const [timeLeft, setTimeLeft] = useState(60);
+  const [submitted, setSubmitted] = useState(false);
 
   // Start Quiz
   useEffect(() => {
@@ -19,12 +20,12 @@ function QuizPage() {
       try {
 
         const res = await API.post(`/quiz/start/${id}`);
+
         setQuiz(res.data.quiz);
+        setAnswers(new Array(res.data.quiz.questions.length).fill(null));
 
       } catch (error) {
-
         console.log(error);
-
       }
 
     };
@@ -33,18 +34,24 @@ function QuizPage() {
 
   }, [id]);
 
-  // Timer Logic
+  // Timer
   useEffect(() => {
+
+    if (submitted) return;
 
     const timer = setInterval(() => {
 
       setTimeLeft((prev) => {
 
-        if (prev === 1) {
+        if (prev <= 1) {
 
           clearInterval(timer);
-          handleSubmit(); // auto submit when time finishes
 
+          if (!submitted) {
+            handleSubmit();
+          }
+
+          return 0;
         }
 
         return prev - 1;
@@ -55,7 +62,7 @@ function QuizPage() {
 
     return () => clearInterval(timer);
 
-  }, []);
+  }, [submitted]);
 
   // Select Answer
   const handleSelect = (questionIndex, optionIndex) => {
@@ -69,77 +76,98 @@ function QuizPage() {
   // Submit Quiz
   const handleSubmit = async () => {
 
+    if (submitted) return;
+
+    setSubmitted(true);
+
     try {
 
+      // Submit quiz answers
       const res = await API.post("/quiz/submit", {
         quizId: id,
         answers
       });
 
+      const score = res.data.score;
+      const total = res.data.totalQuestions;
+
+      // Save attempt
+      await API.post("/attempts/submit", {
+        quizId: id,
+        score: score,
+        totalQuestions: total
+      });
+
+      // Navigate to result page
       navigate("/result", {
         state: {
-          score: res.data.score,
-          total: res.data.totalQuestions
+          score: score,
+          total: total
         }
       });
 
     } catch (error) {
-
-      console.log(error);
-
+      console.log("Submit error:", error);
     }
 
   };
 
   if (!quiz) {
-    return <h2 className="text-center mt-10">Loading Quiz...</h2>;
+
+    return (
+      <div className="flex justify-center items-center h-screen text-xl font-semibold">
+        Loading Quiz...
+      </div>
+    );
+
   }
 
   return (
 
-  <div className="min-h-screen bg-gray-100 p-10">
+    <div className="min-h-screen bg-gray-100 p-6">
 
-    {/* Timer */}
-    <div className="flex justify-end mb-4">
-      <div className="bg-red-500 text-white px-4 py-2 rounded shadow">
-        Time Left: {timeLeft}s
+      {/* Top Bar */}
+      <div className="flex justify-between items-center mb-8">
+
+        <h1 className="text-3xl font-bold">
+          {quiz.title}
+        </h1>
+
+        <div className={`px-4 py-2 rounded text-white font-semibold shadow
+          ${timeLeft < 10 ? "bg-red-600 animate-pulse" : "bg-red-500"}
+        `}>
+          ⏱ {timeLeft}s
+        </div>
+
       </div>
-    </div>
-
-    {/* Quiz Title */}
-    <h1 className="text-3xl font-bold mb-8 text-center">
-      {quiz.title}
-    </h1>
 
       {/* Questions */}
       {quiz.questions.map((q, index) => (
 
         <div
           key={index}
-          className="bg-white p-6 mb-6 rounded shadow"
+          className="bg-white p-6 mb-6 rounded-lg shadow-md"
         >
 
-          {/* Question */}
-          <h2 className="font-semibold mb-4">
+          <h2 className="font-semibold mb-3 text-gray-600">
             Question {index + 1} of {quiz.questions.length}
           </h2>
 
-          <p className="mb-4">
+          <p className="text-lg font-medium mb-4">
             {q.question}
           </p>
 
-          {/* Options */}
-          <div className="space-y-2">
+          <div className="space-y-3">
 
             {q.options.map((option, i) => (
 
               <button
                 key={i}
                 onClick={() => handleSelect(index, i)}
-                className={`block w-full text-left p-3 border rounded transition
+                className={`w-full text-left p-3 border rounded-lg transition
                 ${
                   answers[index] === i
-                    ? "bg-blue-200 border-blue-400"
+                    ? "bg-blue-500 text-white border-blue-600"
                     : "hover:bg-gray-100"
                 }`}
               >
@@ -154,12 +182,18 @@ function QuizPage() {
 
       ))}
 
-      {/* Submit Button */}
-      <div className="text-center">
+      {/* Submit */}
+      <div className="text-center mt-8">
 
         <button
           onClick={handleSubmit}
-          className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded"
+          disabled={submitted}
+          className={`px-8 py-3 rounded text-white font-semibold
+          ${
+            submitted
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-green-500 hover:bg-green-600"
+          }`}
         >
           Submit Quiz
         </button>

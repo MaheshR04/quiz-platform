@@ -6,6 +6,7 @@ import QuizList from "./pages/QuizList";
 import QuizPage from "./pages/QuizPage";
 import Leaderboard from "./pages/Leaderboard";
 import Result from "./pages/Result";
+import HistoryPage from "./pages/HistoryPage";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -57,6 +58,16 @@ function App() {
           element={
             <ProtectedRoute>
               <Leaderboard />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* NEW: Attempt History Page */}
+        <Route
+          path="/history"
+          element={
+            <ProtectedRoute>
+              <HistoryPage />
             </ProtectedRoute>
           }
         />
