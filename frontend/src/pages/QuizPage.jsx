@@ -25,7 +25,9 @@ function QuizPage() {
         setAnswers(new Array(res.data.quiz.questions.length).fill(null));
 
       } catch (error) {
-        console.log(error);
+
+        console.error("Error starting quiz:", error);
+
       }
 
     };
@@ -33,6 +35,7 @@ function QuizPage() {
     startQuiz();
 
   }, [id]);
+
 
   // Timer
   useEffect(() => {
@@ -52,6 +55,7 @@ function QuizPage() {
           }
 
           return 0;
+
         }
 
         return prev - 1;
@@ -64,6 +68,7 @@ function QuizPage() {
 
   }, [submitted]);
 
+
   // Select Answer
   const handleSelect = (questionIndex, optionIndex) => {
 
@@ -72,6 +77,7 @@ function QuizPage() {
     setAnswers(newAnswers);
 
   };
+
 
   // Submit Quiz
   const handleSubmit = async () => {
@@ -82,7 +88,6 @@ function QuizPage() {
 
     try {
 
-      // Submit quiz answers
       const res = await API.post("/quiz/submit", {
         quizId: id,
         answers
@@ -91,14 +96,7 @@ function QuizPage() {
       const score = res.data.score;
       const total = res.data.totalQuestions;
 
-      // Save attempt
-      await API.post("/attempts/submit", {
-        quizId: id,
-        score: score,
-        totalQuestions: total
-      });
-
-      // Navigate to result page
+      // Go to Result page
       navigate("/result", {
         state: {
           score: score,
@@ -107,10 +105,13 @@ function QuizPage() {
       });
 
     } catch (error) {
-      console.log("Submit error:", error);
+
+      console.error("Submit error:", error);
+
     }
 
   };
+
 
   if (!quiz) {
 
@@ -121,6 +122,7 @@ function QuizPage() {
     );
 
   }
+
 
   return (
 
@@ -133,13 +135,16 @@ function QuizPage() {
           {quiz.title}
         </h1>
 
-        <div className={`px-4 py-2 rounded text-white font-semibold shadow
+        <div
+          className={`px-4 py-2 rounded text-white font-semibold shadow
           ${timeLeft < 10 ? "bg-red-600 animate-pulse" : "bg-red-500"}
-        `}>
+        `}
+        >
           ⏱ {timeLeft}s
         </div>
 
       </div>
+
 
       {/* Questions */}
       {quiz.questions.map((q, index) => (
@@ -182,7 +187,8 @@ function QuizPage() {
 
       ))}
 
-      {/* Submit */}
+
+      {/* Submit Button */}
       <div className="text-center mt-8">
 
         <button

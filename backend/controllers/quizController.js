@@ -13,11 +13,28 @@ export const createQuiz = async (req, res) => {
       });
     }
 
+    // Validate each question
+    for (const q of questions) {
+
+      if (!q.question || !q.options || q.options.length < 2) {
+        return res.status(400).json({
+          message: "Each question must have a question and at least 2 options"
+        });
+      }
+
+      if (q.correctAnswer === undefined) {
+        return res.status(400).json({
+          message: "Each question must have a correct answer"
+        });
+      }
+
+    }
+
     const quiz = await Quiz.create({
       title,
       description,
       questions,
-      createdBy: req.user?.id
+      createdBy: req.user.id
     });
 
     res.status(201).json({
@@ -26,9 +43,13 @@ export const createQuiz = async (req, res) => {
     });
 
   } catch (error) {
+
+    console.error("Create Quiz Error:", error);
+
     res.status(500).json({
-      message: error.message
+      message: "Error creating quiz"
     });
+
   }
 };
 
@@ -48,9 +69,13 @@ export const getQuizzes = async (req, res) => {
     });
 
   } catch (error) {
+
+    console.error(error);
+
     res.status(500).json({
       message: error.message
     });
+
   }
 };
 
@@ -75,9 +100,13 @@ export const getQuizById = async (req, res) => {
     });
 
   } catch (error) {
+
+    console.error(error);
+
     res.status(500).json({
       message: error.message
     });
+
   }
 };
 
@@ -102,9 +131,13 @@ export const startQuiz = async (req, res) => {
     });
 
   } catch (error) {
+
+    console.error(error);
+
     res.status(500).json({
       message: error.message
     });
+
   }
 };
 
@@ -137,7 +170,6 @@ export const submitQuiz = async (req, res) => {
       }
     });
 
-    // Save result
     await Result.create({
       userId: req.user.id,
       quizId,
@@ -152,9 +184,13 @@ export const submitQuiz = async (req, res) => {
     });
 
   } catch (error) {
+
+    console.error(error);
+
     res.status(500).json({
       message: error.message
     });
+
   }
 };
 
@@ -170,15 +206,51 @@ export const getLeaderboard = async (req, res) => {
       .sort({ score: -1 })
       .limit(10);
 
-    const leaderboard = results.map(r => ({
-      user: r.userId.name,
-      score: r.score
+    const leaderboard = results.map((r) => ({
+      user: r.userId ? r.userId.name : "Unknown User",
+      score: r.score,
+      totalQuestions: r.totalQuestions
     }));
 
-    res.status(200).json({ leaderboard });
+    res.status(200).json({
+      message: "Leaderboard fetched successfully",
+      leaderboard
+    });
 
   } catch (error) {
-    res.status(500).json({ message: error.message });
+
+    console.error(error);
+
+    res.status(500).json({
+      message: error.message
+    });
+
+  }
+};
+
+
+/* USER HISTORY */
+export const getHistory = async (req, res) => {
+  try {
+
+    const history = await Result.find({
+      userId: req.user.id
+    })
+      .populate("quizId", "title")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      history
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    res.status(500).json({
+      message: error.message
+    });
+
   }
 };
 
@@ -205,9 +277,13 @@ export const updateQuiz = async (req, res) => {
     });
 
   } catch (error) {
+
+    console.error(error);
+
     res.status(500).json({
       message: error.message
     });
+
   }
 };
 
@@ -229,8 +305,12 @@ export const deleteQuiz = async (req, res) => {
     });
 
   } catch (error) {
+
+    console.error(error);
+
     res.status(500).json({
       message: error.message
     });
+
   }
 };

@@ -7,6 +7,7 @@ import QuizPage from "./pages/QuizPage";
 import Leaderboard from "./pages/Leaderboard";
 import Result from "./pages/Result";
 import HistoryPage from "./pages/HistoryPage";
+import AdminCreateQuiz from "./pages/AdminCreateQuiz";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -15,14 +16,14 @@ function App() {
     <BrowserRouter>
       <Routes>
 
-        {/* Default route */}
+        {/* Default */}
         <Route path="/" element={<Navigate to="/login" />} />
 
-        {/* Authentication Pages */}
+        {/* Auth */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
-        {/* Dashboard */}
+        {/* Quiz List */}
         <Route
           path="/quizzes"
           element={
@@ -32,7 +33,7 @@ function App() {
           }
         />
 
-        {/* Quiz Page */}
+        {/* Quiz */}
         <Route
           path="/quiz/:id"
           element={
@@ -42,7 +43,7 @@ function App() {
           }
         />
 
-        {/* Result Page */}
+        {/* Result */}
         <Route
           path="/result"
           element={
@@ -52,7 +53,7 @@ function App() {
           }
         />
 
-        {/* Leaderboard Page */}
+        {/* Leaderboard */}
         <Route
           path="/leaderboard"
           element={
@@ -62,12 +63,22 @@ function App() {
           }
         />
 
-        {/* NEW: Attempt History Page */}
+        {/* History */}
         <Route
           path="/history"
           element={
             <ProtectedRoute>
               <HistoryPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Admin Create Quiz */}
+        <Route
+          path="/admin/create-quiz"
+          element={
+            <ProtectedRoute>
+              <AdminCreateQuiz />
             </ProtectedRoute>
           }
         />

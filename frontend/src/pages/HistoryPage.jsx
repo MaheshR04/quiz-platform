@@ -5,6 +5,7 @@ import Navbar from "../components/Navbar";
 function HistoryPage() {
 
   const [history, setHistory] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
 
@@ -12,12 +13,23 @@ function HistoryPage() {
 
       try {
 
-        const res = await API.get("/attempts");
+        const res = await API.get("/quiz/history");
 
-        setHistory(res.data);
+        console.log("History API:", res.data);
+
+        if (res.data && res.data.history) {
+          setHistory(res.data.history);
+        } else {
+          setHistory([]);
+        }
 
       } catch (error) {
-        console.log(error);
+
+        console.log("History error:", error);
+        setHistory([]);
+
+      } finally {
+        setLoading(false);
       }
 
     };
@@ -26,30 +38,43 @@ function HistoryPage() {
 
   }, []);
 
-  return (
+  if (loading) {
+    return (
+      <>
+        <Navbar />
+        <div className="text-center mt-10 text-lg">
+          Loading history...
+        </div>
+      </>
+    );
+  }
 
+  return (
     <>
       <Navbar />
 
       <div className="p-6">
 
-        <h1 className="text-2xl font-bold mb-6">
+        <h1 className="text-2xl font-bold text-center mb-6">
           Quiz Attempt History
         </h1>
 
         {history.length === 0 ? (
 
-          <p>No attempts yet.</p>
+          <p className="text-center text-gray-500">
+            No attempts yet.
+          </p>
 
         ) : (
 
-          <table className="w-full border">
+          <table className="w-full border shadow">
 
             <thead className="bg-gray-200">
               <tr>
-                <th className="p-2">Quiz ID</th>
+                <th className="p-2">Quiz</th>
                 <th className="p-2">Score</th>
-                <th className="p-2">Total Questions</th>
+                <th className="p-2">Total</th>
+                <th className="p-2">Date</th>
               </tr>
             </thead>
 
@@ -59,9 +84,21 @@ function HistoryPage() {
 
                 <tr key={item._id} className="text-center border">
 
-                  <td className="p-2">{item.quizId}</td>
-                  <td className="p-2">{item.score}</td>
-                  <td className="p-2">{item.totalQuestions}</td>
+                  <td className="p-2">
+                    {item.quizId?.title || item.quizId}
+                  </td>
+
+                  <td className="p-2">
+                    {item.score}
+                  </td>
+
+                  <td className="p-2">
+                    {item.totalQuestions}
+                  </td>
+
+                  <td className="p-2">
+                    {new Date(item.createdAt).toLocaleDateString()}
+                  </td>
 
                 </tr>
 
@@ -76,9 +113,7 @@ function HistoryPage() {
       </div>
 
     </>
-
   );
-
 }
 
 export default HistoryPage;

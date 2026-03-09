@@ -1,4 +1,5 @@
 import express from "express";
+
 import {
   createQuiz,
   getQuizzes,
@@ -7,21 +8,44 @@ import {
   submitQuiz,
   getLeaderboard,
   updateQuiz,
-  deleteQuiz
+  deleteQuiz,
+  getHistory
 } from "../controllers/quizController.js";
 
-import { protect } from "../middleware/authMiddleware.js";
+import { protect, admin } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// Create quiz
-router.post("/create", protect, createQuiz);
+/*
+==============================
+ADMIN ROUTES
+==============================
+*/
+
+// Create quiz (Admin only)
+router.post("/create", protect, admin, createQuiz);
+
+// Update quiz (Admin only)
+router.put("/:id", protect, admin, updateQuiz);
+
+// Delete quiz (Admin only)
+router.delete("/:id", protect, admin, deleteQuiz);
+
+
+/*
+==============================
+USER ROUTES
+==============================
+*/
 
 // Get all quizzes
 router.get("/", protect, getQuizzes);
 
-// Leaderboard (must be before :id)
+// Leaderboard
 router.get("/leaderboard/:quizId", protect, getLeaderboard);
+
+// Get user quiz history
+router.get("/history", protect, getHistory);
 
 // Start quiz
 router.post("/start/:quizId", protect, startQuiz);
@@ -29,13 +53,9 @@ router.post("/start/:quizId", protect, startQuiz);
 // Submit quiz
 router.post("/submit", protect, submitQuiz);
 
+ 
+
 // Get single quiz
 router.get("/:id", protect, getQuizById);
-
-// Update quiz
-router.put("/:id", protect, updateQuiz);
-
-// Delete quiz
-router.delete("/:id", protect, deleteQuiz);
 
 export default router;
