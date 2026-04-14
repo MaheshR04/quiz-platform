@@ -11,6 +11,8 @@ function Login() {
     password: ""
   });
 
+  const [showPassword, setShowPassword] = useState(false); // 👁️ NEW
+
   const handleChange = (e) => {
     setForm({
       ...form,
@@ -26,18 +28,13 @@ function Login() {
 
       const res = await API.post("/auth/login", form);
 
-      console.log("Login response:", res.data);
-
-      // Save token
       localStorage.setItem("token", res.data.token);
 
-      // Redirect to quizzes dashboard
       navigate("/quizzes");
 
     } catch (error) {
 
       console.error(error);
-
       alert(error.response?.data?.message || "Login failed");
 
     }
@@ -45,47 +42,73 @@ function Login() {
   };
 
   return (
-    <div className="flex items-center justify-center h-screen bg-gray-100">
+    <div className="flex items-center justify-center h-screen bg-gradient-to-br from-blue-100 to-gray-200">
 
       <form
         onSubmit={handleSubmit}
-        className="bg-white p-8 rounded shadow-md w-96"
+        className="bg-white p-8 rounded-xl shadow-lg w-96"
       >
 
-        <h2 className="text-2xl font-bold mb-6 text-center">
-          Login
+        <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">
+          Welcome Back 👋
         </h2>
 
+        {/* Email */}
         <input
           type="email"
           name="email"
           placeholder="Email"
-          className="w-full border p-2 mb-4 rounded"
+          className="w-full border p-3 mb-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
           onChange={handleChange}
           required
         />
 
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          className="w-full border p-2 mb-4 rounded"
-          onChange={handleChange}
-          required
-        />
+        {/* Password Field with Eye Icon */}
+        <div className="relative mb-2">
 
+          <input
+            type={showPassword ? "text" : "password"}
+            name="password"
+            placeholder="Password"
+            className="w-full border p-3 pr-10 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+            onChange={handleChange}
+            required
+          />
+
+          {/* 👁️ Icon */}
+          <span
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-3 cursor-pointer text-gray-500"
+          >
+            {showPassword ? "🙈" : "👁️"}
+          </span>
+
+        </div>
+
+        {/* Forgot Password */}
+        <div className="text-right mb-4">
+          <span
+            onClick={() => navigate("/forgot-password")}
+            className="text-sm text-blue-500 cursor-pointer hover:underline"
+          >
+            Forgot Password?
+          </span>
+        </div>
+
+        {/* Login Button */}
         <button
           type="submit"
-          className="w-full bg-green-500 text-white py-2 rounded mb-4 hover:bg-green-600"
+          className="w-full bg-green-500 text-white py-3 rounded font-semibold hover:bg-green-600 transition"
         >
           Login
         </button>
 
-        <p className="text-center text-sm">
+        {/* Register */}
+        <p className="text-center text-sm mt-4 text-gray-600">
           Don't have an account?{" "}
           <Link
             to="/register"
-            className="text-blue-500 font-semibold"
+            className="text-blue-500 font-semibold hover:underline"
           >
             Register
           </Link>

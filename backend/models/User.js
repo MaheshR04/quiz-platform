@@ -12,6 +12,11 @@ const userSchema = new mongoose.Schema({
     unique: true
   },
 
+  phone: {
+    type: String,
+    required: true
+  },
+
   password: {
     type: String,
     required: true
@@ -19,8 +24,17 @@ const userSchema = new mongoose.Schema({
 
   role: {
     type: String,
-    enum: ["teacher", "student","admin"],
+    enum: ["teacher", "student", "admin"],
     default: "student"
+  },
+
+  // ✅ OTP fields
+  otp: {
+    type: String
+  },
+
+  otpExpiry: {
+    type: Date
   }
 
 }, { timestamps: true });

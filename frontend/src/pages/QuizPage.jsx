@@ -11,6 +11,7 @@ function QuizPage() {
   const [answers, setAnswers] = useState([]);
   const [timeLeft, setTimeLeft] = useState(60);
   const [submitted, setSubmitted] = useState(false);
+  const [warningShown, setWarningShown] = useState(false); // ✅ NEW
 
   // Start Quiz
   useEffect(() => {
@@ -23,6 +24,9 @@ function QuizPage() {
 
         setQuiz(res.data.quiz);
         setAnswers(new Array(res.data.quiz.questions.length).fill(null));
+
+        // Use backend timer if available
+        setTimeLeft(res.data.quiz.timeLimit || 60);
 
       } catch (error) {
 
@@ -37,36 +41,30 @@ function QuizPage() {
   }, [id]);
 
 
-  // Timer
+  // ✅ TIMER + WARNING + AUTO SUBMIT
   useEffect(() => {
 
-    if (submitted) return;
+    if (!quiz || submitted) return;
 
-    const timer = setInterval(() => {
+    // 🔔 Show warning ONLY ONCE at 5 seconds
+    if (timeLeft === 5 && !warningShown) {
+      alert("⚠️ Only 5 seconds left!");
+      setWarningShown(true);
+    }
 
-      setTimeLeft((prev) => {
+    // ⛔ Auto submit when time ends
+    if (timeLeft === 0) {
+      handleSubmit();
+      return;
+    }
 
-        if (prev <= 1) {
-
-          clearInterval(timer);
-
-          if (!submitted) {
-            handleSubmit();
-          }
-
-          return 0;
-
-        }
-
-        return prev - 1;
-
-      });
-
+    const timer = setTimeout(() => {
+      setTimeLeft((prev) => prev - 1);
     }, 1000);
 
-    return () => clearInterval(timer);
+    return () => clearTimeout(timer);
 
-  }, [submitted]);
+  }, [timeLeft, quiz, submitted, warningShown]);
 
 
   // Select Answer
@@ -82,7 +80,7 @@ function QuizPage() {
   // Submit Quiz
   const handleSubmit = async () => {
 
-    if (submitted) return;
+    if (submitted) return; // prevent duplicate
 
     setSubmitted(true);
 
@@ -96,12 +94,8 @@ function QuizPage() {
       const score = res.data.score;
       const total = res.data.totalQuestions;
 
-      // Go to Result page
       navigate("/result", {
-        state: {
-          score: score,
-          total: total
-        }
+        state: { score, total }
       });
 
     } catch (error) {
