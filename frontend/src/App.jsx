@@ -1,105 +1,31 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
+import Navbar from "./components/Navbar";
 import Login from "./pages/Login";
-import ForgotPassword from "./pages/ForgotPassword";
 import Register from "./pages/Register";
 import QuizList from "./pages/QuizList";
-import QuizPage from "./pages/QuizPage";
+import Settings from "./pages/Settings";
 import Leaderboard from "./pages/Leaderboard";
-import Result from "./pages/Result";
-import HistoryPage from "./pages/HistoryPage";
-import AdminCreateQuiz from "./pages/AdminCreateQuiz";
-import EditQuiz from "./pages/EditQuiz"; // ✅ NEW
-
-import ProtectedRoute from "./components/ProtectedRoute";
+import History from "./pages/HistoryPage";
 
 function App() {
   return (
     <BrowserRouter>
+
+      {/* ✅ Navbar inside Router */}
+      <Navbar />
+
       <Routes>
-
-        {/* Default */}
-        <Route path="/" element={<Navigate to="/login" />} />
-
-        {/* Auth */}
+        <Route path="/" element={<Login />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/register" element={<Register />} />
-
-        {/* Quiz List */}
-        <Route
-          path="/quizzes"
-          element={
-            <ProtectedRoute>
-              <QuizList />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Quiz */}
-        <Route
-          path="/quiz/:id"
-          element={
-            <ProtectedRoute>
-              <QuizPage />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Result */}
-        <Route
-          path="/result"
-          element={
-            <ProtectedRoute>
-              <Result />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Leaderboard */}
-        <Route
-          path="/leaderboard"
-          element={
-            <ProtectedRoute>
-              <Leaderboard />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* History */}
-        <Route
-          path="/history"
-          element={
-            <ProtectedRoute>
-              <HistoryPage />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Admin Create Quiz */}
-        <Route
-          path="/admin/create-quiz"
-          element={
-            <ProtectedRoute>
-              <AdminCreateQuiz />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* ✅ NEW: Edit Quiz Route */}
-        <Route
-          path="/admin/edit-quiz/:id"
-          element={
-            <ProtectedRoute>
-              <EditQuiz />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Fallback */}
-        <Route path="*" element={<Navigate to="/login" />} />
-
+        <Route path="/quizzes" element={<QuizList />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/leaderboard" element={<Leaderboard />} />
+        <Route path="/history" element={<History />} />
+        
       </Routes>
+
     </BrowserRouter>
   );
 }

@@ -3,7 +3,6 @@ import { useNavigate, Link } from "react-router-dom";
 import API from "../services/api";
 
 function Login() {
-
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
@@ -11,7 +10,7 @@ function Login() {
     password: ""
   });
 
-  const [showPassword, setShowPassword] = useState(false); // 👁️ NEW
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) => {
     setForm({
@@ -21,24 +20,30 @@ function Login() {
   };
 
   const handleSubmit = async (e) => {
-
     e.preventDefault();
 
     try {
-
       const res = await API.post("/auth/login", form);
 
+      // ✅ Store token
       localStorage.setItem("token", res.data.token);
+
+      // ✅ Store user (role + other info if available)
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          role: res.data.user?.role || "user" // fallback if backend not sending
+        })
+      );
+
+      console.log("Login Response:", res.data); // 🔍 debug
 
       navigate("/quizzes");
 
     } catch (error) {
-
       console.error(error);
       alert(error.response?.data?.message || "Login failed");
-
     }
-
   };
 
   return (
@@ -48,7 +53,6 @@ function Login() {
         onSubmit={handleSubmit}
         className="bg-white p-8 rounded-xl shadow-lg w-96"
       >
-
         <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">
           Welcome Back 👋
         </h2>
@@ -63,9 +67,8 @@ function Login() {
           required
         />
 
-        {/* Password Field with Eye Icon */}
+        {/* Password */}
         <div className="relative mb-2">
-
           <input
             type={showPassword ? "text" : "password"}
             name="password"
@@ -75,14 +78,12 @@ function Login() {
             required
           />
 
-          {/* 👁️ Icon */}
           <span
             onClick={() => setShowPassword(!showPassword)}
             className="absolute right-3 top-3 cursor-pointer text-gray-500"
           >
             {showPassword ? "🙈" : "👁️"}
           </span>
-
         </div>
 
         {/* Forgot Password */}
@@ -113,9 +114,7 @@ function Login() {
             Register
           </Link>
         </p>
-
       </form>
-
     </div>
   );
 }
