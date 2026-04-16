@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import API from "../services/api";
-import Navbar from "../components/Navbar";
 
 function Leaderboard() {
 
@@ -30,16 +29,19 @@ function Leaderboard() {
 
   return (
 
-    <>
-      <Navbar />
+    <div className="p-10">
 
-      <div className="p-10">
+      <h1 className="text-3xl font-bold mb-8 text-center">
+        Leaderboard
+      </h1>
 
-        <h1 className="text-3xl font-bold mb-8 text-center">
-          Leaderboard
-        </h1>
+      {leaders.length === 0 ? (
+        <p className="text-center text-gray-500">
+          No data available
+        </p>
+      ) : (
 
-        {leaders.map((user, index) => (
+        leaders.map((user, index) => (
 
           <div
             key={index}
@@ -52,10 +54,11 @@ function Leaderboard() {
 
           </div>
 
-        ))}
+        ))
 
-      </div>
-    </>
+      )}
+
+    </div>
 
   );
 }
