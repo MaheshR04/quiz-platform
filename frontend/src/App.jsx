@@ -12,13 +12,15 @@ import Result from "./pages/Result";
 import HistoryPage from "./pages/HistoryPage";
 import AdminCreateQuiz from "./pages/AdminCreateQuiz";
 import EditQuiz from "./pages/EditQuiz";
-import Settings from "./pages/Settings"; // ⚠️ MUST exist
+import Settings from "./pages/Settings";
+import ProfileSettings from "./pages/ProfileSettings"; // ✅ ADD THIS
 
 import ProtectedRoute from "./components/ProtectedRoute";
 
 function AppWrapper() {
   const location = useLocation();
 
+  // Hide navbar on auth pages
   const hideNavbarRoutes = ["/login", "/register", "/forgot-password"];
 
   return (
@@ -26,12 +28,16 @@ function AppWrapper() {
       {!hideNavbarRoutes.includes(location.pathname) && <Navbar />}
 
       <Routes>
+
+        {/* Default */}
         <Route path="/" element={<Navigate to="/login" />} />
 
+        {/* Auth */}
         <Route path="/login" element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/register" element={<Register />} />
 
+        {/* Quiz */}
         <Route
           path="/quizzes"
           element={
@@ -59,6 +65,7 @@ function AppWrapper() {
           }
         />
 
+        {/* Features */}
         <Route
           path="/leaderboard"
           element={
@@ -86,6 +93,17 @@ function AppWrapper() {
           }
         />
 
+        {/* ✅ NEW PROFILE SETTINGS ROUTE */}
+        <Route
+          path="/profile-settings"
+          element={
+            <ProtectedRoute>
+              <ProfileSettings />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Admin */}
         <Route
           path="/admin/create-quiz"
           element={
@@ -104,7 +122,9 @@ function AppWrapper() {
           }
         />
 
+        {/* Fallback */}
         <Route path="*" element={<Navigate to="/login" />} />
+
       </Routes>
     </>
   );

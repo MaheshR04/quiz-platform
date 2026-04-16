@@ -1,67 +1,114 @@
-import { User, Mail, Lock, Phone } from "lucide-react";
+import { useEffect, useState } from "react";
+import API from "../services/api";
 
-export default function ProfileSettings() {
+function ProfileSettings() {
+
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    phone: ""
+  });
+
+  // Load user data from token
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    if (token) {
+      const user = JSON.parse(atob(token.split(".")[1]));
+
+      setFormData({
+        name: user.name || "",
+        email: user.email || "",
+        password: "",
+        phone: user.phone || ""
+      });
+    }
+  }, []);
+
+  // Handle input change
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  // 🔥 UPDATE PROFILE FUNCTION
+  const handleUpdate = async () => {
+    try {
+
+      const res = await API.put("/auth/update-profile", formData);
+
+      alert("Profile updated successfully");
+
+      // Optional: update token again if backend sends new one
+      if (res.data.token) {
+        localStorage.setItem("token", res.data.token);
+      }
+
+    } catch (error) {
+      console.error(error);
+      alert("Failed to update profile");
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+    <div className="flex justify-center items-center h-[80vh]">
 
-      {/* Card */}
-      <div className="bg-white shadow-xl rounded-2xl p-8 w-full max-w-md">
+      <div className="bg-white p-8 rounded shadow w-full max-w-md">
 
-        {/* Title */}
-        <h2 className="text-2xl font-bold text-center mb-6">
+        <h2 className="text-2xl font-bold mb-6 text-center">
           Profile Settings
         </h2>
 
-        {/* Form */}
-        <div className="space-y-4">
+        <input
+          type="text"
+          name="name"
+          value={formData.name}
+          onChange={handleChange}
+          placeholder="Name"
+          className="w-full mb-4 p-2 border rounded"
+        />
 
-          {/* Username */}
-          <div className="flex items-center border rounded-lg px-3 py-2">
-            <User className="text-gray-400 mr-2" size={18} />
-            <input
-              type="text"
-              placeholder="Username"
-              className="w-full outline-none"
-            />
-          </div>
+        <input
+          type="email"
+          name="email"
+          value={formData.email}
+          onChange={handleChange}
+          placeholder="Email"
+          className="w-full mb-4 p-2 border rounded"
+        />
 
-          {/* Email */}
-          <div className="flex items-center border rounded-lg px-3 py-2">
-            <Mail className="text-gray-400 mr-2" size={18} />
-            <input
-              type="email"
-              placeholder="Email"
-              className="w-full outline-none"
-            />
-          </div>
+        <input
+          type="password"
+          name="password"
+          value={formData.password}
+          onChange={handleChange}
+          placeholder="New Password"
+          className="w-full mb-4 p-2 border rounded"
+        />
 
-          {/* Password */}
-          <div className="flex items-center border rounded-lg px-3 py-2">
-            <Lock className="text-gray-400 mr-2" size={18} />
-            <input
-              type="password"
-              placeholder="Password"
-              className="w-full outline-none"
-            />
-          </div>
+        <input
+          type="text"
+          name="phone"
+          value={formData.phone}
+          onChange={handleChange}
+          placeholder="Phone"
+          className="w-full mb-4 p-2 border rounded"
+        />
 
-          {/* Phone */}
-          <div className="flex items-center border rounded-lg px-3 py-2">
-            <Phone className="text-gray-400 mr-2" size={18} />
-            <input
-              type="text"
-              placeholder="Phone Number"
-              className="w-full outline-none"
-            />
-          </div>
+        <button
+          onClick={handleUpdate}
+          className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700"
+        >
+          Update Profile
+        </button>
 
-          {/* Button */}
-          <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-medium transition">
-            Update Profile
-          </button>
-
-        </div>
       </div>
+
     </div>
   );
 }
+
+export default ProfileSettings;

@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 
-export default function Settings() {
+function Settings() {
+
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -9,10 +10,13 @@ export default function Settings() {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10">
-      <h2 className="text-2xl font-bold mb-6 text-center">Settings</h2>
+    <div className="p-10 flex justify-center">
 
-      <div className="bg-white shadow rounded-lg overflow-hidden">
+      <div className="w-full max-w-md bg-white rounded-lg shadow">
+
+        <h1 className="text-2xl font-bold text-center py-4">
+          Settings
+        </h1>
 
         {/* Profile Settings */}
         <div
@@ -26,12 +30,15 @@ export default function Settings() {
         {/* Logout */}
         <div
           onClick={handleLogout}
-          className="p-4 cursor-pointer hover:bg-gray-100 flex justify-between text-red-500"
+          className="p-4 cursor-pointer text-red-500 hover:bg-gray-100"
         >
-          <span>🚪 Logout</span>
+          🚪 Logout
         </div>
 
       </div>
+
     </div>
   );
 }
+
+export default Settings;
