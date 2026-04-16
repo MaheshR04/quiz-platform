@@ -1,0 +1,27 @@
+{
+  "name": "quizapp",
+  "version": "1.0.0",
+  "description": "Features:\r - JWT Authentication\r - Quiz dashboard\r - Quiz playing system\r - Result page\r - Leaderboard",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MaheshR04/quiz-platform.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/MaheshR04/quiz-platform/issues"
+  },
+  "homepage": "https://github.com/MaheshR04/quiz-platform#readme",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  },
+  "dependencies": {
+    "lucide-react": "^1.8.0"
+  }
+}
