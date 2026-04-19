@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
 
 function EditQuiz() {
 
@@ -11,38 +10,34 @@ function EditQuiz() {
   const [description, setDescription] = useState("");
   const [questions, setQuestions] = useState([]);
 
-  const token = localStorage.getItem("token");
-
-  // Load quiz data
+  // ✅ FIXED LOAD LOGIC
   useEffect(() => {
 
-    const fetchQuiz = async () => {
-      try {
+    let storedQuizzes = JSON.parse(localStorage.getItem("quizzes")) || [];
 
-        const res = await axios.get(
-          `http://localhost:5000/api/quiz/${id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`
-            }
-          }
-        );
+    // 1. Try from quizzes list
+    let quiz = storedQuizzes.find((q) => q._id === id);
 
-        const quiz = res.data.quiz;
-
-        setTitle(quiz.title);
-        setDescription(quiz.description);
-        setQuestions(quiz.questions);
-
-      } catch (error) {
-        console.error(error);
-        alert("Error loading quiz");
+    // 2. Fallback from currentQuiz (IMPORTANT FIX)
+    if (!quiz) {
+      const current = JSON.parse(localStorage.getItem("currentQuiz"));
+      if (current && current._id === id) {
+        quiz = current;
       }
-    };
+    }
 
-    fetchQuiz();
+    // 3. If still not found
+    if (!quiz) {
+      alert("Quiz not found!");
+      navigate("/quizzes");
+      return;
+    }
 
-  }, [id, token]);
+    setTitle(quiz.title);
+    setDescription(quiz.description);
+    setQuestions(quiz.questions);
+
+  }, [id, navigate]);
 
   // Update question
   const handleQuestionChange = (index, value) => {
@@ -77,7 +72,7 @@ function EditQuiz() {
     ]);
   };
 
-  // ❌ Delete Question (SAFE)
+  // ❌ Delete Question
   const deleteQuestion = (index) => {
 
     if (questions.length === 1) {
@@ -92,26 +87,44 @@ function EditQuiz() {
     setQuestions(updated);
   };
 
-  // Save update
-  const handleUpdate = async () => {
+  // ✅ FIXED SAVE LOGIC
+  const handleUpdate = () => {
+
     try {
 
-      await axios.put(
-        `http://localhost:5000/api/quiz/${id}`,
-        { title, description, questions },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
+      let storedQuizzes = JSON.parse(localStorage.getItem("quizzes")) || [];
+
+      // Update quizzes array
+      const updatedQuizzes = storedQuizzes.map((q) =>
+        q._id === id
+          ? { ...q, title, description, questions }
+          : q
       );
 
-      alert("Quiz updated successfully!");
+      localStorage.setItem("quizzes", JSON.stringify(updatedQuizzes));
+
+      // ALSO update currentQuiz (IMPORTANT)
+      const current = JSON.parse(localStorage.getItem("currentQuiz"));
+
+      if (current && current._id === id) {
+        localStorage.setItem(
+          "currentQuiz",
+          JSON.stringify({
+            ...current,
+            title,
+            description,
+            questions
+          })
+        );
+      }
+
+      alert("Quiz updated successfully ✅");
+
       navigate("/quizzes");
 
     } catch (error) {
       console.error(error);
-      alert("Error updating quiz");
+      alert("Error updating quiz ❌");
     }
   };
 
@@ -125,14 +138,16 @@ function EditQuiz() {
         type="text"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        className="w-full border p-2 mb-4"
+        className="w-full border p-2 mb-4 rounded"
+        placeholder="Quiz Title"
       />
 
       {/* Description */}
       <textarea
         value={description}
         onChange={(e) => setDescription(e.target.value)}
-        className="w-full border p-2 mb-6"
+        className="w-full border p-2 mb-6 rounded"
+        placeholder="Description"
       />
 
       {/* Questions */}
@@ -140,7 +155,7 @@ function EditQuiz() {
 
         <div
           key={qIndex}
-          className="border p-4 mb-6 rounded relative bg-white shadow"
+          className="border p-4 mb-6 rounded-lg bg-white shadow"
         >
 
           <div className="flex justify-between items-center mb-2">
@@ -149,7 +164,6 @@ function EditQuiz() {
               Question {qIndex + 1}
             </h2>
 
-            {/* ❌ Delete Button */}
             <button
               onClick={() => deleteQuestion(qIndex)}
               className="text-red-600 text-sm font-semibold hover:underline"
@@ -165,7 +179,8 @@ function EditQuiz() {
             onChange={(e) =>
               handleQuestionChange(qIndex, e.target.value)
             }
-            className="w-full border p-2 mb-4"
+            className="w-full border p-2 mb-4 rounded"
+            placeholder="Enter question"
           />
 
           {q.options.map((opt, oIndex) => (
@@ -188,7 +203,8 @@ function EditQuiz() {
                 onChange={(e) =>
                   handleOptionChange(qIndex, oIndex, e.target.value)
                 }
-                className="w-full border p-2"
+                className="w-full border p-2 rounded"
+                placeholder={`Option ${oIndex + 1}`}
               />
 
             </div>

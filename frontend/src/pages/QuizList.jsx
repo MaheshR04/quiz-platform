@@ -20,7 +20,6 @@ function QuizList() {
 
   const navigate = useNavigate();
 
-  // Get user from token
   const token = localStorage.getItem("token");
   let user = null;
 
@@ -39,7 +38,7 @@ function QuizList() {
           return;
         }
 
-        const response = await axios.get(
+        const res = await axios.get(
           "http://localhost:5000/api/quiz",
           {
             headers: {
@@ -48,17 +47,13 @@ function QuizList() {
           }
         );
 
-        setQuizzes(response.data.quizzes);
+        setQuizzes(res.data.quizzes);
 
-      } catch (error) {
-
-        console.error("Error fetching quizzes:", error);
+      } catch (err) {
+        console.error(err);
         alert("Failed to fetch quizzes");
-
       } finally {
-
         setLoading(false);
-
       }
 
     };
@@ -67,44 +62,52 @@ function QuizList() {
 
   }, [navigate, token]);
 
-  // Delete quiz
   const handleDelete = async (id) => {
     try {
+      if (!window.confirm("Delete this quiz?")) return;
 
-      const confirmDelete = window.confirm("Are you sure you want to delete?");
-      if (!confirmDelete) return;
+      await axios.delete(`http://localhost:5000/api/quiz/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
 
-      await axios.delete(
-        `http://localhost:5000/api/quiz/${id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      );
+      setQuizzes((prev) => prev.filter((q) => q._id !== id));
 
-      setQuizzes(quizzes.filter((q) => q._id !== id));
+    } catch (err) {
+      console.error(err);
+      alert("Delete failed");
+    }
+  };
+
+  // ✅ NEW: FIX START BUTTON
+  const handleStartQuiz = (quiz) => {
+    try {
+      // Save quiz in localStorage
+      localStorage.setItem("currentQuiz", JSON.stringify(quiz));
+
+      // Navigate to quiz page
+      navigate(`/quiz/${quiz._id}`);
 
     } catch (error) {
-
-      console.error("Delete error:", error);
-      alert("Error deleting quiz");
-
+      console.error("Error starting quiz:", error);
+      alert("Failed to start quiz");
     }
   };
 
   if (loading) {
     return (
-      <p className="text-center mt-10 text-lg">Loading quizzes...</p>
+      <div className="flex justify-center items-center h-screen text-lg font-semibold">
+        Loading quizzes...
+      </div>
     );
   }
 
   return (
-    <div className="flex">
+    <div className="flex min-h-screen bg-gray-100">
 
-      {/* Sidebar */}
-      <div className="w-64 min-h-screen bg-white shadow-lg p-6 hidden md:block">
-        <h2 className="text-xl font-bold text-green-600 mb-6 flex items-center gap-2">
+      {/* SIDEBAR */}
+      <div className="w-64 bg-white shadow-lg p-6 hidden md:block">
+
+        <h2 className="text-xl font-bold text-green-600 mb-6">
           📘 QuizMaster
         </h2>
 
@@ -117,7 +120,7 @@ function QuizList() {
           {user?.role === "admin" && (
             <button
               onClick={() => navigate("/admin/create-quiz")}
-              className="flex items-center gap-2 w-full p-2 rounded hover:bg-gray-100"
+              className="flex items-center gap-2 w-full p-2 rounded hover:bg-gray-100 transition"
             >
               <PlusCircle size={18} /> Create Quiz
             </button>
@@ -126,116 +129,127 @@ function QuizList() {
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 bg-gray-100 p-6">
+      {/* MAIN */}
+      <div className="flex-1">
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+        <div className="p-8 max-w-6xl mx-auto">
 
-          <div className="bg-white p-5 rounded-2xl shadow flex items-center gap-4">
-            <BookOpen className="text-green-500" />
-            <div>
-              <p className="text-gray-500 text-sm">Total Quizzes</p>
-              <h2 className="text-xl font-bold">{quizzes.length}</h2>
-            </div>
-          </div>
+          {/* STATS */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
 
-          <div className="bg-white p-5 rounded-2xl shadow flex items-center gap-4">
-            <CheckCircle className="text-blue-500" />
-            <div>
-              <p className="text-gray-500 text-sm">Published</p>
-              <h2 className="text-xl font-bold">{quizzes.length}</h2>
-            </div>
-          </div>
-
-          <div className="bg-white p-5 rounded-2xl shadow flex items-center gap-4">
-            <Users className="text-purple-500" />
-            <div>
-              <p className="text-gray-500 text-sm">Attempts</p>
-              <h2 className="text-xl font-bold">0</h2>
-            </div>
-          </div>
-
-          <div className="bg-white p-5 rounded-2xl shadow flex items-center gap-4">
-            <TrendingUp className="text-yellow-500" />
-            <div>
-              <p className="text-gray-500 text-sm">Avg Score</p>
-              <h2 className="text-xl font-bold">0%</h2>
-            </div>
-          </div>
-
-        </div>
-
-        {/* Create Button */}
-        {user?.role === "admin" && (
-          <button
-            onClick={() => navigate("/admin/create-quiz")}
-            className="flex items-center gap-2 bg-green-600 text-white px-5 py-2 rounded-xl mb-6 hover:bg-green-700 shadow"
-          >
-            <PlusCircle size={18} /> Create New Quiz
-          </button>
-        )}
-
-        {/* Quiz List */}
-        <div className="bg-white p-6 rounded-2xl shadow">
-          <h2 className="text-lg font-semibold mb-4">Your Quizzes</h2>
-
-          {quizzes.length === 0 ? (
-            <p className="text-gray-500">No quizzes found</p>
-          ) : (
-            quizzes.map((quiz) => (
-              <div
-                key={quiz._id}
-                className="flex justify-between items-center border p-4 rounded-xl mb-3 hover:shadow transition"
-              >
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-semibold">{quiz.title}</h3>
-
-                    <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
-                      published
-                    </span>
-                  </div>
-
-                  <p className="text-sm text-gray-500">
-                    {quiz.description || "No description"}
-                  </p>
-                </div>
-
-                <div className="flex gap-3 items-center">
-
-                  <button
-                    onClick={() => navigate(`/quiz/${quiz._id}`)}
-                    className="flex items-center gap-1 px-3 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-                  >
-                    <Play size={14} /> Start
-                  </button>
-
-                  {user?.role === "admin" && (
-                    <>
-                      <button
-                        onClick={() => navigate(`/admin/edit-quiz/${quiz._id}`)}
-                        className="p-2 rounded hover:bg-gray-100"
-                      >
-                        <Pencil size={18} />
-                      </button>
-
-                      <button
-                        onClick={() => handleDelete(quiz._id)}
-                        className="p-2 rounded hover:bg-red-100 text-red-500"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    </>
-                  )}
-
-                </div>
+            <div className="bg-white p-6 rounded-xl shadow-md flex items-center gap-4">
+              <BookOpen className="text-green-500" />
+              <div>
+                <p className="text-gray-500 text-sm">Total Quizzes</p>
+                <h2 className="text-xl font-bold">{quizzes.length}</h2>
               </div>
-            ))
+            </div>
+
+            <div className="bg-white p-6 rounded-xl shadow-md flex items-center gap-4">
+              <CheckCircle className="text-blue-500" />
+              <div>
+                <p className="text-gray-500 text-sm">Published</p>
+                <h2 className="text-xl font-bold">{quizzes.length}</h2>
+              </div>
+            </div>
+
+            <div className="bg-white p-6 rounded-xl shadow-md flex items-center gap-4">
+              <Users className="text-purple-500" />
+              <div>
+                <p className="text-gray-500 text-sm">Attempts</p>
+                <h2 className="text-xl font-bold">0</h2>
+              </div>
+            </div>
+
+            <div className="bg-white p-6 rounded-xl shadow-md flex items-center gap-4">
+              <TrendingUp className="text-yellow-500" />
+              <div>
+                <p className="text-gray-500 text-sm">Avg Score</p>
+                <h2 className="text-xl font-bold">0%</h2>
+              </div>
+            </div>
+
+          </div>
+
+          {/* CREATE */}
+          {user?.role === "admin" && (
+            <button
+              onClick={() => navigate("/admin/create-quiz")}
+              className="flex items-center gap-2 bg-green-600 text-white px-5 py-2 rounded-lg hover:bg-green-700 shadow mb-6 transition"
+            >
+              <PlusCircle size={18} /> Create New Quiz
+            </button>
           )}
 
-        </div>
+          {/* QUIZZES */}
+          <div className="bg-white p-6 rounded-xl shadow-md">
 
+            <h2 className="text-lg font-semibold mb-4">
+              Your Quizzes
+            </h2>
+
+            {quizzes.length === 0 ? (
+              <p className="text-gray-500">No quizzes found</p>
+            ) : (
+              quizzes.map((quiz) => (
+                <div
+                  key={quiz._id}
+                  className="flex justify-between items-center border p-4 rounded-lg mb-3 hover:shadow-md transition"
+                >
+
+                  {/* LEFT */}
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-semibold">{quiz.title}</h3>
+
+                      <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
+                        published
+                      </span>
+                    </div>
+
+                    <p className="text-sm text-gray-500">
+                      {quiz.description || "No description"}
+                    </p>
+                  </div>
+
+                  {/* RIGHT */}
+                  <div className="flex gap-2 items-center">
+
+                    {/* ✅ FIXED START BUTTON */}
+                    <button
+                      onClick={() => handleStartQuiz(quiz)}
+                      className="flex items-center gap-1 px-3 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+                    >
+                      <Play size={14} /> Start
+                    </button>
+
+                    {user?.role === "admin" && (
+                      <>
+                        <button
+                          onClick={() => navigate(`/admin/edit-quiz/${quiz._id}`)}
+                          className="p-2 rounded hover:bg-gray-100"
+                        >
+                          <Pencil size={18} />
+                        </button>
+
+                        <button
+                          onClick={() => handleDelete(quiz._id)}
+                          className="p-2 rounded hover:bg-red-100 text-red-500"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </>
+                    )}
+
+                  </div>
+
+                </div>
+              ))
+            )}
+
+          </div>
+
+        </div>
       </div>
     </div>
   );
