@@ -1,12 +1,22 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import {
+  LayoutDashboard,
+  PlusCircle,
+  BookOpen,
+  CheckCircle,
+  Users,
+  TrendingUp,
+  Pencil,
+  Trash2,
+  Play
+} from "lucide-react";
 
 function QuizList() {
 
   const [quizzes, setQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [openMenu, setOpenMenu] = useState(null);
 
   const navigate = useNavigate();
 
@@ -57,16 +67,6 @@ function QuizList() {
 
   }, [navigate, token]);
 
-  // Toggle menu
-  const toggleMenu = (id) => {
-    setOpenMenu(openMenu === id ? null : id);
-  };
-
-  // Edit quiz
-  const handleEdit = (id) => {
-    navigate(`/admin/edit-quiz/${id}`);
-  };
-
   // Delete quiz
   const handleDelete = async (id) => {
     try {
@@ -83,8 +83,6 @@ function QuizList() {
         }
       );
 
-      alert("Quiz deleted successfully");
-
       setQuizzes(quizzes.filter((q) => q._id !== id));
 
     } catch (error) {
@@ -95,106 +93,150 @@ function QuizList() {
     }
   };
 
-
   if (loading) {
     return (
       <p className="text-center mt-10 text-lg">Loading quizzes...</p>
     );
   }
 
-
   return (
-    <div className="p-10 max-w-4xl mx-auto">
+    <div className="flex">
 
-      {/* Header */}
-      <div className="flex justify-between items-center mb-8">
+      {/* Sidebar */}
+      <div className="w-64 min-h-screen bg-white shadow-lg p-6 hidden md:block">
+        <h2 className="text-xl font-bold text-green-600 mb-6 flex items-center gap-2">
+          📘 QuizMaster
+        </h2>
 
-        <h1 className="text-3xl font-bold">
-          Available Quizzes
-        </h1>
+        <div className="space-y-3">
 
+          <button className="flex items-center gap-2 w-full p-2 rounded bg-green-100 text-green-700 font-medium">
+            <LayoutDashboard size={18} /> Dashboard
+          </button>
+
+          {user?.role === "admin" && (
+            <button
+              onClick={() => navigate("/admin/create-quiz")}
+              className="flex items-center gap-2 w-full p-2 rounded hover:bg-gray-100"
+            >
+              <PlusCircle size={18} /> Create Quiz
+            </button>
+          )}
+
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 bg-gray-100 p-6">
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+
+          <div className="bg-white p-5 rounded-2xl shadow flex items-center gap-4">
+            <BookOpen className="text-green-500" />
+            <div>
+              <p className="text-gray-500 text-sm">Total Quizzes</p>
+              <h2 className="text-xl font-bold">{quizzes.length}</h2>
+            </div>
+          </div>
+
+          <div className="bg-white p-5 rounded-2xl shadow flex items-center gap-4">
+            <CheckCircle className="text-blue-500" />
+            <div>
+              <p className="text-gray-500 text-sm">Published</p>
+              <h2 className="text-xl font-bold">{quizzes.length}</h2>
+            </div>
+          </div>
+
+          <div className="bg-white p-5 rounded-2xl shadow flex items-center gap-4">
+            <Users className="text-purple-500" />
+            <div>
+              <p className="text-gray-500 text-sm">Attempts</p>
+              <h2 className="text-xl font-bold">0</h2>
+            </div>
+          </div>
+
+          <div className="bg-white p-5 rounded-2xl shadow flex items-center gap-4">
+            <TrendingUp className="text-yellow-500" />
+            <div>
+              <p className="text-gray-500 text-sm">Avg Score</p>
+              <h2 className="text-xl font-bold">0%</h2>
+            </div>
+          </div>
+
+        </div>
+
+        {/* Create Button */}
         {user?.role === "admin" && (
           <button
             onClick={() => navigate("/admin/create-quiz")}
-            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
+            className="flex items-center gap-2 bg-green-600 text-white px-5 py-2 rounded-xl mb-6 hover:bg-green-700 shadow"
           >
-            Create Quiz
+            <PlusCircle size={18} /> Create New Quiz
           </button>
         )}
 
-      </div>
+        {/* Quiz List */}
+        <div className="bg-white p-6 rounded-2xl shadow">
+          <h2 className="text-lg font-semibold mb-4">Your Quizzes</h2>
 
+          {quizzes.length === 0 ? (
+            <p className="text-gray-500">No quizzes found</p>
+          ) : (
+            quizzes.map((quiz) => (
+              <div
+                key={quiz._id}
+                className="flex justify-between items-center border p-4 rounded-xl mb-3 hover:shadow transition"
+              >
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-semibold">{quiz.title}</h3>
 
-      {quizzes.length === 0 ? (
-
-        <p className="text-center text-gray-500">
-          No quizzes found
-        </p>
-
-      ) : (
-
-        quizzes.map((quiz) => (
-
-          <div
-            key={quiz._id}
-            className="relative border p-6 rounded-lg mb-6 shadow hover:shadow-lg transition bg-white"
-          >
-
-            {/* Admin Menu */}
-            {user?.role === "admin" && (
-              <div className="absolute top-4 right-4">
-
-                <button
-                  onClick={() => toggleMenu(quiz._id)}
-                  className="text-xl font-bold"
-                >
-                  ⋮
-                </button>
-
-                {openMenu === quiz._id && (
-                  <div className="absolute right-0 mt-2 w-32 bg-white border rounded shadow">
-
-                    <button
-                      onClick={() => handleEdit(quiz._id)}
-                      className="block w-full text-left px-4 py-2 hover:bg-gray-100"
-                    >
-                      Edit
-                    </button>
-
-                    <button
-                      onClick={() => handleDelete(quiz._id)}
-                      className="block w-full text-left px-4 py-2 text-red-500 hover:bg-gray-100"
-                    >
-                      Delete
-                    </button>
-
+                    <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
+                      published
+                    </span>
                   </div>
-                )}
 
+                  <p className="text-sm text-gray-500">
+                    {quiz.description || "No description"}
+                  </p>
+                </div>
+
+                <div className="flex gap-3 items-center">
+
+                  <button
+                    onClick={() => navigate(`/quiz/${quiz._id}`)}
+                    className="flex items-center gap-1 px-3 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                  >
+                    <Play size={14} /> Start
+                  </button>
+
+                  {user?.role === "admin" && (
+                    <>
+                      <button
+                        onClick={() => navigate(`/admin/edit-quiz/${quiz._id}`)}
+                        className="p-2 rounded hover:bg-gray-100"
+                      >
+                        <Pencil size={18} />
+                      </button>
+
+                      <button
+                        onClick={() => handleDelete(quiz._id)}
+                        className="p-2 rounded hover:bg-red-100 text-red-500"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </>
+                  )}
+
+                </div>
               </div>
-            )}
+            ))
+          )}
 
-            <h2 className="text-xl font-semibold mb-2">
-              {quiz.title}
-            </h2>
+        </div>
 
-            <p className="text-gray-600 mb-4">
-              {quiz.description}
-            </p>
-
-            <button
-              onClick={() => navigate(`/quiz/${quiz._id}`)}
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
-            >
-              Start Quiz
-            </button>
-
-          </div>
-
-        ))
-
-      )}
-
+      </div>
     </div>
   );
 }

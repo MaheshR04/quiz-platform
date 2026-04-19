@@ -46,7 +46,7 @@ function Navbar() {
 
         <Link to="/quizzes">
           <button className="bg-blue-500 hover:bg-blue-700 px-4 py-2 rounded">
-            Quizzes
+            DashBoard
           </button>
         </Link>
 
