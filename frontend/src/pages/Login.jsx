@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import RoleDropSelector from "../components/RoleDropSelector";
 import API from "../services/api";
 import { normalizeRole } from "../utils/auth";
 
@@ -9,7 +10,8 @@ function Login() {
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     email: "",
-    password: ""
+    password: "",
+    role: "student"
   });
 
   const handleChange = (event) => {
@@ -24,6 +26,7 @@ function Login() {
       const response = await API.post("/auth/login", form);
       const user = response.data?.user || {};
       const token = response.data?.token;
+      const loggedInRole = normalizeRole(user.role);
 
       if (!token) {
         throw new Error("Token not received from server");
@@ -37,7 +40,7 @@ function Login() {
           name: user.name,
           email: user.email,
           phone: user.phone,
-          role: normalizeRole(user.role)
+          role: loggedInRole
         })
       );
 
@@ -105,6 +108,11 @@ function Login() {
                 Forgot password?
               </button>
             </div>
+
+            <RoleDropSelector
+              value={form.role}
+              onChange={(role) => setForm((prev) => ({ ...prev, role }))}
+            />
 
             <button
               type="submit"

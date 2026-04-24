@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import RoleDropSelector from "../components/RoleDropSelector";
 import API from "../services/api";
+import { normalizeRole } from "../utils/auth";
 
 function Register() {
   const navigate = useNavigate();
@@ -10,7 +12,8 @@ function Register() {
     name: "",
     email: "",
     phone: "",
-    password: ""
+    password: "",
+    role: "student"
   });
 
   const handleChange = (event) => {
@@ -22,11 +25,29 @@ function Register() {
     setLoading(true);
 
     try {
-      await API.post("/auth/register", form);
-      alert("Registered successfully. Please login.");
-      navigate("/login");
+      const response = await API.post("/auth/register", form);
+      const user = response.data?.user || {};
+      const token = response.data?.token;
+
+      if (!token) {
+        throw new Error("Token not received from server");
+      }
+
+      localStorage.setItem("token", token);
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          phone: user.phone,
+          role: normalizeRole(user.role)
+        })
+      );
+
+      navigate("/quizzes");
     } catch (error) {
-      alert(error.response?.data?.message || "Register failed");
+      alert(error.response?.data?.message || error.message || "Register failed");
     } finally {
       setLoading(false);
     }
@@ -39,7 +60,7 @@ function Register() {
         className="w-full max-w-md rounded-3xl border border-white/50 bg-white/85 p-8 shadow-2xl backdrop-blur"
       >
         <h1 className="mb-1 text-3xl font-semibold text-slate-900">Create Account</h1>
-        <p className="mb-6 text-sm text-slate-500">Join as a student and start taking quizzes.</p>
+        <p className="mb-6 text-sm text-slate-500">Create your account and open the right dashboard.</p>
 
         <input
           type="text"
@@ -91,6 +112,11 @@ function Register() {
             {showPassword ? "Hide" : "Show"}
           </button>
         </div>
+
+        <RoleDropSelector
+          value={form.role}
+          onChange={(role) => setForm((prev) => ({ ...prev, role }))}
+        />
 
         <button
           type="submit"
