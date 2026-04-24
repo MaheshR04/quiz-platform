@@ -1,49 +1,108 @@
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
-import Navbar from "./components/Navbar";
+import Layout from "./components/Layout";
+import ProtectedRoute from "./components/ProtectedRoute";
+import { getToken } from "./utils/auth";
 
 import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
 import Register from "./pages/Register";
 import QuizList from "./pages/QuizList";
+import AvailableQuizzes from "./pages/AvailableQuizzes";
 import QuizPage from "./pages/QuizPage";
-import Leaderboard from "./pages/Leaderboard";
 import Result from "./pages/Result";
+import Leaderboard from "./pages/Leaderboard";
 import HistoryPage from "./pages/HistoryPage";
+import Settings from "./pages/Settings";
+import ProfileSettings from "./pages/ProfileSettings";
+import StudentHelp from "./pages/StudentHelp";
 import AdminCreateQuiz from "./pages/AdminCreateQuiz";
 import EditQuiz from "./pages/EditQuiz";
-import Settings from "./pages/Settings";
-import ProfileSettings from "./pages/ProfileSettings"; // ✅ ADD THIS
 
-import ProtectedRoute from "./components/ProtectedRoute";
+function HomeRedirect() {
+  return <Navigate to={getToken() ? "/quizzes" : "/login"} replace />;
+}
 
-function AppWrapper() {
-  const location = useLocation();
-
-  // Hide navbar on auth pages
-  const hideNavbarRoutes = ["/login", "/register", "/forgot-password"];
-
+function InAppRoute({ children, allowedRoles }) {
   return (
-    <>
-      {!hideNavbarRoutes.includes(location.pathname) && <Navbar />}
+    <ProtectedRoute allowedRoles={allowedRoles}>
+      <Layout>{children}</Layout>
+    </ProtectedRoute>
+  );
+}
 
+function App() {
+  return (
+    <BrowserRouter>
       <Routes>
+        <Route path="/" element={<HomeRedirect />} />
 
-        {/* Default */}
-        <Route path="/" element={<Navigate to="/login" />} />
-
-        {/* Auth */}
         <Route path="/login" element={<Login />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
 
-        {/* Quiz */}
+        <Route path="/dashboard" element={<Navigate to="/quizzes" replace />} />
+
         <Route
           path="/quizzes"
           element={
-            <ProtectedRoute>
+            <InAppRoute>
               <QuizList />
-            </ProtectedRoute>
+            </InAppRoute>
+          }
+        />
+
+        <Route
+          path="/available-quizzes"
+          element={
+            <InAppRoute allowedRoles={["student", "teacher"]}>
+              <AvailableQuizzes />
+            </InAppRoute>
+          }
+        />
+
+        <Route
+          path="/leaderboard"
+          element={
+            <InAppRoute>
+              <Leaderboard />
+            </InAppRoute>
+          }
+        />
+
+        <Route
+          path="/history"
+          element={
+            <InAppRoute>
+              <HistoryPage />
+            </InAppRoute>
+          }
+        />
+
+        <Route
+          path="/settings"
+          element={
+            <InAppRoute>
+              <Settings />
+            </InAppRoute>
+          }
+        />
+
+        <Route
+          path="/profile-settings"
+          element={
+            <InAppRoute>
+              <ProfileSettings />
+            </InAppRoute>
+          }
+        />
+
+        <Route
+          path="/help"
+          element={
+            <InAppRoute allowedRoles={["student", "teacher"]}>
+              <StudentHelp />
+            </InAppRoute>
           }
         />
 
@@ -59,81 +118,32 @@ function AppWrapper() {
         <Route
           path="/result"
           element={
-            <ProtectedRoute>
+            <InAppRoute>
               <Result />
-            </ProtectedRoute>
+            </InAppRoute>
           }
         />
 
-        {/* Features */}
-        <Route
-          path="/leaderboard"
-          element={
-            <ProtectedRoute>
-              <Leaderboard />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/history"
-          element={
-            <ProtectedRoute>
-              <HistoryPage />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/settings"
-          element={
-            <ProtectedRoute>
-              <Settings />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* ✅ NEW PROFILE SETTINGS ROUTE */}
-        <Route
-          path="/profile-settings"
-          element={
-            <ProtectedRoute>
-              <ProfileSettings />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Admin */}
         <Route
           path="/admin/create-quiz"
           element={
-            <ProtectedRoute>
+            <InAppRoute allowedRoles={["admin"]}>
               <AdminCreateQuiz />
-            </ProtectedRoute>
+            </InAppRoute>
           }
         />
 
         <Route
           path="/admin/edit-quiz/:id"
           element={
-            <ProtectedRoute>
+            <InAppRoute allowedRoles={["admin"]}>
               <EditQuiz />
-            </ProtectedRoute>
+            </InAppRoute>
           }
         />
 
-        {/* Fallback */}
-        <Route path="*" element={<Navigate to="/login" />} />
-
+        <Route path="*" element={<HomeRedirect />} />
       </Routes>
-    </>
-  );
-}
-
-function App() {
-  return (
-    <BrowserRouter>
-      <AppWrapper />
     </BrowserRouter>
   );
 }

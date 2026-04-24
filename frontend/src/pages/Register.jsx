@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import API from "../services/api";
 
 function Register() {
-
   const navigate = useNavigate();
-
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -13,117 +13,100 @@ function Register() {
     password: ""
   });
 
-  const [showPassword, setShowPassword] = useState(false);
-
-  const handleChange = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value
-    });
+  const handleChange = (event) => {
+    setForm((prev) => ({ ...prev, [event.target.name]: event.target.value }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setLoading(true);
 
     try {
-
       await API.post("/auth/register", form);
-
-      alert("Registered successfully!");
+      alert("Registered successfully. Please login.");
       navigate("/login");
-
     } catch (error) {
       alert(error.response?.data?.message || "Register failed");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="flex items-center justify-center h-screen bg-gradient-to-br from-blue-100 to-gray-200">
-
+    <div className="flex min-h-screen items-center justify-center px-4">
       <form
         onSubmit={handleSubmit}
-        className="bg-white p-8 rounded-xl shadow-lg w-96"
+        className="w-full max-w-md rounded-3xl border border-white/50 bg-white/85 p-8 shadow-2xl backdrop-blur"
       >
+        <h1 className="mb-1 text-3xl font-semibold text-slate-900">Create Account</h1>
+        <p className="mb-6 text-sm text-slate-500">Join as a student and start taking quizzes.</p>
 
-        <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">
-          Create Account 🚀
-        </h2>
-
-        {/* Name */}
         <input
           type="text"
           name="name"
-          placeholder="Full Name"
-          className="w-full border p-3 mb-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+          value={form.name}
           onChange={handleChange}
+          placeholder="Full name"
+          className="mb-3 w-full rounded-xl border border-slate-200 px-4 py-3 outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-100"
           required
         />
 
-        {/* Email */}
         <input
           type="email"
           name="email"
-          placeholder="Email Address"
-          className="w-full border p-3 mb-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+          value={form.email}
           onChange={handleChange}
+          placeholder="Email address"
+          className="mb-3 w-full rounded-xl border border-slate-200 px-4 py-3 outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-100"
           required
         />
 
-        {/* Phone Number */}
         <input
           type="tel"
           name="phone"
-          placeholder="Phone Number"
-          className="w-full border p-3 mb-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+          value={form.phone}
           onChange={handleChange}
+          placeholder="Phone number"
           pattern="[0-9]{10}"
           title="Enter 10 digit phone number"
+          className="mb-3 w-full rounded-xl border border-slate-200 px-4 py-3 outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-100"
           required
         />
 
-        {/* Password */}
-        <div className="relative mb-2">
-
+        <div className="relative mb-5">
           <input
             type={showPassword ? "text" : "password"}
             name="password"
-            placeholder="Password"
-            className="w-full border p-3 pr-10 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+            value={form.password}
             onChange={handleChange}
+            placeholder="Password"
+            className="w-full rounded-xl border border-slate-200 px-4 py-3 pr-11 outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-100"
             required
           />
-
-          {/* 👁️ Toggle */}
-          <span
-            onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-3 cursor-pointer text-gray-500"
+          <button
+            type="button"
+            onClick={() => setShowPassword((prev) => !prev)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md px-2 py-1 text-xs font-semibold text-slate-500 hover:bg-slate-100"
           >
-            {showPassword ? "🙈" : "👁️"}
-          </span>
-
+            {showPassword ? "Hide" : "Show"}
+          </button>
         </div>
 
-        {/* Register Button */}
         <button
           type="submit"
-          className="w-full bg-blue-500 text-white py-3 rounded mt-4 font-semibold hover:bg-blue-600 transition"
+          disabled={loading}
+          className="w-full rounded-xl bg-teal-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-teal-600/25 transition hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-70"
         >
-          Register
+          {loading ? "Creating..." : "Register"}
         </button>
 
-        {/* Login Link */}
-        <p className="text-center text-sm mt-4 text-gray-600">
-          Already have an account?{" "}
-          <Link
-            to="/login"
-            className="text-blue-500 font-semibold hover:underline"
-          >
+        <p className="mt-5 text-center text-sm text-slate-600">
+          Already registered?{" "}
+          <Link to="/login" className="font-semibold text-teal-700 hover:underline">
             Login
           </Link>
         </p>
-
       </form>
-
     </div>
   );
 }
