@@ -180,4 +180,13 @@ The frontend runs on **http://localhost:5173**
 
 ---
 
- 
+## 📄 License
+
+This project is licensed under the [MIT License](LICENSE).
+
+---
+
+## 👨‍💻 Author
+
+**Mahesh Rathod**  
+GitHub: [@your-username](https://github.com/your-username)
