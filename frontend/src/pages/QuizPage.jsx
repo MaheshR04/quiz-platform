@@ -28,7 +28,9 @@ function QuizPage() {
         }
 
         setQuiz(quizData);
-        setAnswers(new Array(quizData.questions.length).fill(null));
+        setAnswers(
+          quizData.questions.map((q) => (q.type === "multiple_select" ? [] : q.type === "fill_in_blank" ? "" : null))
+        );
         setTimeLeft(quizData.timeLimit || 60);
       } catch (error) {
         alert(error.response?.data?.message || "Failed to load quiz");
@@ -42,12 +44,31 @@ function QuizPage() {
   }, [id, navigate]);
 
   const answeredCount = useMemo(
-    () => answers.filter((answer) => answer !== null).length,
+    () =>
+      answers.filter((answer) => {
+        if (Array.isArray(answer)) return answer.length > 0;
+        return answer !== null && answer !== "";
+      }).length,
     [answers]
   );
 
-  const handleSelect = (questionIndex, optionIndex) => {
-    setAnswers((prev) => prev.map((answer, index) => (index === questionIndex ? optionIndex : answer)));
+  const handleSelect = (questionIndex, selection) => {
+    setAnswers((prev) =>
+      prev.map((answer, index) => {
+        if (index !== questionIndex) return answer;
+
+        const question = quiz.questions[questionIndex];
+
+        if (question.type === "multiple_select") {
+          const current = Array.isArray(answer) ? answer : [];
+          return current.includes(selection)
+            ? current.filter((val) => val !== selection)
+            : [...current, selection];
+        }
+
+        return selection;
+      })
+    );
   };
 
   const submitQuiz = useCallback(
@@ -56,7 +77,17 @@ function QuizPage() {
 
       setSubmitting(true);
       try {
-        const normalizedAnswers = answers.map((answer) => (answer === null ? -1 : answer));
+        const normalizedAnswers = answers.map((answer, index) => {
+          const question = quiz.questions[index];
+          if (question.type === "multiple_select") {
+            return Array.isArray(answer) ? answer : [];
+          }
+          if (question.type === "fill_in_blank") {
+            return typeof answer === "string" ? answer : "";
+          }
+          return answer === null ? -1 : answer;
+        });
+
         const response = await API.post("/quiz/submit", {
           quizId: id,
           answers: normalizedAnswers
@@ -143,24 +174,59 @@ function QuizPage() {
               </p>
               <h2 className="mb-4 text-lg font-semibold text-slate-900">{question.question}</h2>
 
-              <div className="grid gap-2">
-                {question.options.map((option, optionIndex) => {
-                  const isSelected = answers[questionIndex] === optionIndex;
-                  return (
-                    <button
-                      key={`option-${questionIndex}-${optionIndex}`}
-                      onClick={() => handleSelect(questionIndex, optionIndex)}
-                      className={`rounded-xl border px-4 py-3 text-left text-sm transition ${
-                        isSelected
-                          ? "border-teal-600 bg-teal-50 text-teal-800"
-                          : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
-                      }`}
-                    >
+              {question.type === "fill_in_blank" ? (
+                <input
+                  type="text"
+                  value={answers[questionIndex] || ""}
+                  onChange={(e) => handleSelect(questionIndex, e.target.value)}
+                  placeholder="Type your answer here..."
+                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-100"
+                />
+              ) : question.type === "dropdown" ? (
+                <select
+                  value={answers[questionIndex] ?? ""}
+                  onChange={(e) => handleSelect(questionIndex, parseInt(e.target.value))}
+                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-teal-500"
+                >
+                  <option value="" disabled>
+                    Select an option
+                  </option>
+                  {question.options.map((option, optionIndex) => (
+                    <option key={optionIndex} value={optionIndex}>
                       {option}
-                    </button>
-                  );
-                })}
-              </div>
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <div className="grid gap-2">
+                  {question.options.map((option, optionIndex) => {
+                    const isSelected =
+                      question.type === "multiple_select"
+                        ? Array.isArray(answers[questionIndex]) &&
+                          answers[questionIndex].includes(optionIndex)
+                        : answers[questionIndex] === optionIndex;
+
+                    return (
+                      <button
+                        key={`option-${questionIndex}-${optionIndex}`}
+                        onClick={() => handleSelect(questionIndex, optionIndex)}
+                        className={`rounded-xl border px-4 py-3 text-left text-sm transition ${
+                          isSelected
+                            ? "border-teal-600 bg-teal-50 text-teal-800"
+                            : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                        }`}
+                      >
+                        {question.type === "multiple_select" && (
+                          <span className="mr-2 inline-block h-4 w-4 rounded border border-current align-middle">
+                            {isSelected && "✓"}
+                          </span>
+                        )}
+                        {option}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </article>
           ))}
         </div>

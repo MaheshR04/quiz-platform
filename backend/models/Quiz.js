@@ -7,19 +7,29 @@ const questionSchema = new mongoose.Schema({
     trim: true
   },
 
+  type: {
+    type: String,
+    enum: ["multiple_choice", "multiple_select", "true_false", "fill_in_blank", "dropdown"],
+    default: "multiple_choice"
+  },
+
   options: {
     type: [String],
-    required: true,
+    required: function () {
+      return this.type !== "fill_in_blank";
+    },
     validate: {
       validator: function (value) {
-        return value.length >= 2 && value.length <= 6;
+        if (this.type === "fill_in_blank") return true;
+        if (this.type === "true_false") return value.length === 2;
+        return value.length >= 2 && value.length <= 10;
       },
-      message: "A question must have between 2 and 6 options"
+      message: "A question must have between 2 and 10 options"
     }
   },
 
   correctAnswer: {
-    type: Number, // index of correct option
+    type: mongoose.Schema.Types.Mixed, // index, array of indices, or string
     required: true
   },
 
@@ -28,6 +38,7 @@ const questionSchema = new mongoose.Schema({
     default: 1
   }
 });
+
 
 
 const quizSchema = new mongoose.Schema(

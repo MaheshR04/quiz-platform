@@ -15,19 +15,21 @@ export const createQuiz = async (req, res) => {
 
     // Validate each question
     for (const q of questions) {
+      if (!q.question) {
+        return res.status(400).json({ message: "Each question must have a question text" });
+      }
 
-      if (!q.question || !q.options || q.options.length < 2) {
+      if (q.type !== "fill_in_blank" && (!q.options || q.options.length < 2)) {
         return res.status(400).json({
-          message: "Each question must have a question and at least 2 options"
+          message: "Each question (except fill in the blank) must have at least 2 options"
         });
       }
 
-      if (q.correctAnswer === undefined) {
+      if (q.correctAnswer === undefined || q.correctAnswer === null || q.correctAnswer === "") {
         return res.status(400).json({
           message: "Each question must have a correct answer"
         });
       }
-
     }
 
     const quiz = await Quiz.create({
@@ -165,8 +167,34 @@ export const submitQuiz = async (req, res) => {
     let score = 0;
 
     quiz.questions.forEach((question, index) => {
-      if (answers[index] === question.correctAnswer) {
-        score++;
+      const userAnswer = answers[index];
+      const correctAnswer = question.correctAnswer;
+
+      switch (question.type) {
+        case "multiple_choice":
+        case "dropdown":
+        case "true_false":
+          if (userAnswer === correctAnswer) score++;
+          break;
+        case "multiple_select":
+          if (Array.isArray(userAnswer) && Array.isArray(correctAnswer)) {
+            if (
+              userAnswer.length === correctAnswer.length &&
+              userAnswer.every((val) => correctAnswer.includes(val))
+            ) {
+              score++;
+            }
+          }
+          break;
+        case "fill_in_blank":
+          if (typeof userAnswer === "string" && typeof correctAnswer === "string") {
+            if (userAnswer.trim().toLowerCase() === correctAnswer.trim().toLowerCase()) {
+              score++;
+            }
+          }
+          break;
+        default:
+          if (userAnswer === correctAnswer) score++;
       }
     });
 
