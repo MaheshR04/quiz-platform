@@ -54,11 +54,12 @@ function Layout({ children }) {
     : [
         { to: "/quizzes", label: "Dashboard", icon: LayoutDashboard },
         { to: "/available-quizzes", label: "Available Quizzes", icon: BookOpenCheck },
-        { to: "/leaderboard", label: "Leaderboard", icon: Trophy },
-        { to: "/history", label: "History", icon: History },
+        { to: "/history", label: "My Attempts", icon: History },
         { to: "/settings", label: "Settings", icon: Settings },
         { to: "/help", label: "Study Tips", icon: CircleHelp }
       ];
+
+
 
   const logout = () => {
     clearAuth();

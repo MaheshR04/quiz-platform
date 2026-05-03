@@ -41,6 +41,14 @@ quizapp/
 - 🔐 Forgot Password / Reset Password
 - 👤 Profile Settings
 - ➕ Create, Edit & Delete Quizzes
+- 📝 Support for 5 Question Types:
+  - Multiple Choice (Radio buttons)
+  - Multiple Select (Checkboxes)
+  - True / False
+  - Fill in the Blank (Text input)
+  - Dropdown (Select menu)
+- 🏆 Real-time Leaderboards
+- 📈 User Quiz History
 - 🛡️ Protected Routes (auth-guarded pages)
 - 📱 Responsive UI with Tailwind CSS
 - ⚡ Fast development with Vite + React
@@ -54,7 +62,7 @@ quizapp/
 | Frontend  | React, Vite, Tailwind CSS         |
 | Backend   | Node.js, Express.js               |
 | Auth      | JWT (JSON Web Tokens)             |
-| Database  | (your DB here, e.g. MongoDB/PostgreSQL) |
+| Database  | MongoDB (Mongoose)                |
 | Dev Tools | Nodemon, ESLint, Prettier         |
 
 ---
@@ -71,7 +79,7 @@ quizapp/
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/quizapp.git
+git clone https://github.com/MaheshR04/quiz-platform.git
 cd quizapp
 ```
 
@@ -135,18 +143,31 @@ The frontend runs on **http://localhost:5173**
 
 ## 📡 API Endpoints
 
+### Auth
 | Method | Endpoint                  | Description              | Auth Required |
 |--------|---------------------------|--------------------------|---------------|
 | POST   | `/api/auth/register`      | Register a new user      | ❌            |
 | POST   | `/api/auth/login`         | Login and get token      | ❌            |
 | POST   | `/api/auth/forgot-password` | Send reset email       | ❌            |
 | POST   | `/api/auth/reset-password`  | Reset user password    | ❌            |
-| GET    | `/api/users/profile`      | Get user profile         | ✅            |
-| PUT    | `/api/users/profile`      | Update profile settings  | ✅            |
-| GET    | `/api/quizzes`            | Get all quizzes          | ✅            |
-| POST   | `/api/quizzes`            | Create a new quiz        | ✅            |
-| PUT    | `/api/quizzes/:id`        | Edit a quiz              | ✅            |
-| DELETE | `/api/quizzes/:id`        | Delete a quiz            | ✅            |
+
+### Quizzes
+| Method | Endpoint                  | Description              | Auth Required | Admin Only |
+|--------|---------------------------|--------------------------|---------------|------------|
+| GET    | `/api/quiz`               | Get all quizzes          | ✅            | ❌          |
+| GET    | `/api/quiz/:id`           | Get single quiz          | ✅            | ❌          |
+| POST   | `/api/quiz/create`        | Create a new quiz        | ✅            | ✅          |
+| PUT    | `/api/quiz/:id`           | Edit a quiz              | ✅            | ✅          |
+| DELETE | `/api/quiz/:id`           | Delete a quiz            | ✅            | ✅          |
+| POST   | `/api/quiz/start/:id`     | Start a quiz             | ✅            | ❌          |
+| POST   | `/api/quiz/submit`        | Submit quiz answers      | ✅            | ❌          |
+| GET    | `/api/quiz/leaderboard/:id`| Get quiz leaderboard    | ✅            | ✅          |
+| GET    | `/api/quiz/history`       | Get quiz history (All for admin, self for students) | ✅            | ❌          |
+
+
+
+
+
 
 ---
 

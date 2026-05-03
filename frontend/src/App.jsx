@@ -64,7 +64,7 @@ function App() {
         <Route
           path="/leaderboard"
           element={
-            <InAppRoute>
+            <InAppRoute allowedRoles={["admin"]}>
               <Leaderboard />
             </InAppRoute>
           }

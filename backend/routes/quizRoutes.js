@@ -31,6 +31,14 @@ router.put("/:id", protect, admin, updateQuiz);
 // Delete quiz (Admin only)
 router.delete("/:id", protect, admin, deleteQuiz);
 
+// Leaderboard (Admin only)
+router.get("/leaderboard/:quizId", protect, admin, getLeaderboard);
+
+// Get quiz history (Admin can see all, but currently controller filters by user.id)
+// Actually, if we want admin to see all, we need a different controller or logic.
+// For now, let's allow users to see their own history.
+router.get("/history", protect, getHistory);
+
 
 /*
 ==============================
@@ -41,17 +49,13 @@ USER ROUTES
 // Get all quizzes
 router.get("/", protect, getQuizzes);
 
-// Leaderboard
-router.get("/leaderboard/:quizId", protect, getLeaderboard);
-
-// Get user quiz history
-router.get("/history", protect, getHistory);
 
 // Start quiz
 router.post("/start/:quizId", protect, startQuiz);
 
 // Submit quiz
 router.post("/submit", protect, submitQuiz);
+
 
  
 

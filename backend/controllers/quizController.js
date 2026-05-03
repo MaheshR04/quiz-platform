@@ -260,27 +260,29 @@ export const getLeaderboard = async (req, res) => {
 /* USER HISTORY */
 export const getHistory = async (req, res) => {
   try {
+    let filter = {};
+    if (req.user.role !== "admin") {
+      filter = { userId: req.user.id };
+    }
 
-    const history = await Result.find({
-      userId: req.user.id
-    })
+    const history = await Result.find(filter)
       .populate("quizId", "title")
+      .populate("userId", "name email")
       .sort({ createdAt: -1 });
 
     res.status(200).json({
       history
     });
-
   } catch (error) {
-
     console.error(error);
-
     res.status(500).json({
       message: error.message
     });
-
   }
 };
+
+
+
 
 
 /* UPDATE QUIZ (Admin) */

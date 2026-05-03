@@ -1,11 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
 import { CalendarDays, ChartNoAxesColumn, ClipboardCheck } from "lucide-react";
+import { getCurrentUser } from "../utils/auth";
+
 
 import API from "../services/api";
+
 
 function HistoryPage() {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const user = useMemo(() => getCurrentUser(), []);
+  const isAdmin = user.role === "admin";
 
   useEffect(() => {
     const fetchHistory = async () => {
@@ -84,6 +90,7 @@ function HistoryPage() {
               <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
                 <tr>
                   <th className="px-4 py-3">Quiz</th>
+                  {isAdmin && <th className="px-4 py-3">Student</th>}
                   <th className="px-4 py-3">Score</th>
                   <th className="px-4 py-3">Accuracy</th>
                   <th className="px-4 py-3">Date</th>
@@ -99,6 +106,11 @@ function HistoryPage() {
                       <td className="px-4 py-3 font-medium text-slate-800">
                         {item.quizId?.title || "Unknown Quiz"}
                       </td>
+                      {isAdmin && (
+                        <td className="px-4 py-3 text-slate-600">
+                          {item.userId?.name || item.userId?.email || "Unknown"}
+                        </td>
+                      )}
                       <td className="px-4 py-3 text-slate-600">
                         {item.score}/{item.totalQuestions}
                       </td>
