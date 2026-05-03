@@ -47,7 +47,7 @@ function HistoryPage() {
 
   return (
     <div className="space-y-6">
-      <section className="grid gap-4 md:grid-cols-3">
+      <section className={`grid gap-4 ${isAdmin ? "md:grid-cols-3" : "md:grid-cols-1"}`}>
         <article className="rounded-2xl border border-slate-200 bg-white/90 p-5 shadow-sm">
           <div className="mb-3 inline-flex rounded-lg bg-cyan-50 p-2 text-cyan-600">
             <ClipboardCheck size={18} />
@@ -56,21 +56,25 @@ function HistoryPage() {
           <h3 className="text-3xl font-semibold text-slate-900">{history.length}</h3>
         </article>
 
-        <article className="rounded-2xl border border-slate-200 bg-white/90 p-5 shadow-sm">
-          <div className="mb-3 inline-flex rounded-lg bg-emerald-50 p-2 text-emerald-600">
-            <ChartNoAxesColumn size={18} />
-          </div>
-          <p className="text-sm text-slate-500">Average Score</p>
-          <h3 className="text-3xl font-semibold text-slate-900">{averageScore}%</h3>
-        </article>
+        {isAdmin && (
+          <>
+            <article className="rounded-2xl border border-slate-200 bg-white/90 p-5 shadow-sm">
+              <div className="mb-3 inline-flex rounded-lg bg-emerald-50 p-2 text-emerald-600">
+                <ChartNoAxesColumn size={18} />
+              </div>
+              <p className="text-sm text-slate-500">Average Score</p>
+              <h3 className="text-3xl font-semibold text-slate-900">{averageScore}%</h3>
+            </article>
 
-        <article className="rounded-2xl border border-slate-200 bg-white/90 p-5 shadow-sm">
-          <div className="mb-3 inline-flex rounded-lg bg-amber-50 p-2 text-amber-600">
-            <CalendarDays size={18} />
-          </div>
-          <p className="text-sm text-slate-500">Best Score</p>
-          <h3 className="text-3xl font-semibold text-slate-900">{bestScore}%</h3>
-        </article>
+            <article className="rounded-2xl border border-slate-200 bg-white/90 p-5 shadow-sm">
+              <div className="mb-3 inline-flex rounded-lg bg-amber-50 p-2 text-amber-600">
+                <CalendarDays size={18} />
+              </div>
+              <p className="text-sm text-slate-500">Best Score</p>
+              <h3 className="text-3xl font-semibold text-slate-900">{bestScore}%</h3>
+            </article>
+          </>
+        )}
       </section>
 
       <section className="rounded-3xl border border-slate-200/70 bg-white/90 p-6 shadow-sm">
@@ -91,8 +95,8 @@ function HistoryPage() {
                 <tr>
                   <th className="px-4 py-3">Quiz</th>
                   {isAdmin && <th className="px-4 py-3">Student</th>}
-                  <th className="px-4 py-3">Score</th>
-                  <th className="px-4 py-3">Accuracy</th>
+                  {isAdmin && <th className="px-4 py-3">Score</th>}
+                  {isAdmin && <th className="px-4 py-3">Accuracy</th>}
                   <th className="px-4 py-3">Date</th>
                 </tr>
               </thead>
@@ -111,10 +115,12 @@ function HistoryPage() {
                           {item.userId?.name || item.userId?.email || "Unknown"}
                         </td>
                       )}
-                      <td className="px-4 py-3 text-slate-600">
-                        {item.score}/{item.totalQuestions}
-                      </td>
-                      <td className="px-4 py-3 font-semibold text-teal-700">{percent}%</td>
+                      {isAdmin && (
+                        <td className="px-4 py-3 text-slate-600">
+                          {item.score}/{item.totalQuestions}
+                        </td>
+                      )}
+                      {isAdmin && <td className="px-4 py-3 font-semibold text-teal-700">{percent}%</td>}
                       <td className="px-4 py-3 text-slate-500">
                         {new Date(item.createdAt).toLocaleString()}
                       </td>

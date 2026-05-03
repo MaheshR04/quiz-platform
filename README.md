@@ -162,7 +162,8 @@ The frontend runs on **http://localhost:5173**
 | POST   | `/api/quiz/start/:id`     | Start a quiz             | ✅            | ❌          |
 | POST   | `/api/quiz/submit`        | Submit quiz answers      | ✅            | ❌          |
 | GET    | `/api/quiz/leaderboard/:id`| Get quiz leaderboard    | ✅            | ✅          |
-| GET    | `/api/quiz/history`       | Get quiz history (All for admin, self for students) | ✅            | ❌          |
+| GET    | `/api/quiz/history`       | Get quiz history (Full for admin, restricted for students) | ✅            | ❌          |
+
 
 
 
