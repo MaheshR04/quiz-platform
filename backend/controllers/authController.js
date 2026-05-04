@@ -5,9 +5,14 @@ import jwt from "jsonwebtoken";
 const AUTH_ROLES = ["admin", "student"];
 
 function createToken(user) {
+  if (!process.env.JWT_SECRET) {
+    console.error("❌ JWT_SECRET is not defined for token signing");
+    throw new Error("Server authentication configuration missing");
+  }
+
   return jwt.sign(
     {
-      id: user._id,
+      id: user._id.toString(),
       role: user.role
     },
     process.env.JWT_SECRET,

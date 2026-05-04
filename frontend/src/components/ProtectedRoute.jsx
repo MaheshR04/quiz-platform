@@ -1,10 +1,11 @@
 import { Navigate } from "react-router-dom";
-import { getCurrentUser, getToken } from "../utils/auth";
+import { clearAuth, getCurrentUser, getToken, isTokenExpired } from "../utils/auth";
 
 function ProtectedRoute({ children, allowedRoles }) {
   const token = getToken();
 
-  if (!token) {
+  if (!token || isTokenExpired(token)) {
+    if (token) clearAuth();
     return <Navigate to="/login" replace />;
   }
 

@@ -40,6 +40,20 @@ export function getCurrentUser() {
   };
 }
 
+export function isTokenExpired(token = getToken()) {
+  try {
+    if (!token) return true;
+    const payload = decodeTokenPayload(token);
+    if (!payload.exp) return false;
+
+    // JWT exp is in seconds, Date.now() is in milliseconds
+    const now = Math.floor(Date.now() / 1000);
+    return payload.exp < now;
+  } catch {
+    return true;
+  }
+}
+
 export function clearAuth() {
   localStorage.removeItem("token");
   localStorage.removeItem("user");
