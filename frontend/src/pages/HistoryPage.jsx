@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { CalendarDays, ChartNoAxesColumn, ClipboardCheck } from "lucide-react";
+import { CalendarDays, ChartNoAxesColumn, ClipboardCheck, Download } from "lucide-react";
 import { getCurrentUser } from "../utils/auth";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 
 import API from "../services/api";
@@ -45,6 +47,44 @@ function HistoryPage() {
     return Math.round(sum / history.length);
   }, [history]);
 
+  const downloadPDF = () => {
+    try {
+      const doc = new jsPDF();
+
+      // Add title
+      doc.setFontSize(18);
+      doc.text("Quiz Attempt Results", 14, 22);
+
+      // Add timestamp
+      doc.setFontSize(11);
+      doc.setTextColor(100);
+      doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 30);
+
+      const tableColumn = ["Quiz Title", "Student", "Score", "Accuracy", "Date"];
+      const tableRows = history.map((item) => [
+        item.quizId?.title || "Unknown Quiz",
+        item.userId?.name || item.userId?.email || "Unknown",
+        `${item.score}/${item.totalQuestions}`,
+        `${item.totalQuestions ? Math.round((item.score / item.totalQuestions) * 100) : 0}%`,
+        new Date(item.createdAt).toLocaleString()
+      ]);
+
+      autoTable(doc, {
+        head: [tableColumn],
+        body: tableRows,
+        startY: 35,
+        theme: "striped",
+        headStyles: { fillColor: [13, 148, 136] }, // teal-600
+        styles: { fontSize: 9 }
+      });
+
+      doc.save(`quiz_history_${new Date().getTime()}.pdf`);
+    } catch (pdfError) {
+      console.error("PDF Generation Error:", pdfError);
+      alert("Could not generate PDF. Please check the console for details.");
+    }
+  };
+
   return (
     <div className="space-y-6">
       <section className={`grid gap-4 ${isAdmin ? "md:grid-cols-3" : "md:grid-cols-1"}`}>
@@ -78,7 +118,18 @@ function HistoryPage() {
       </section>
 
       <section className="rounded-3xl border border-slate-200/70 bg-white/90 p-6 shadow-sm">
-        <h2 className="mb-4 text-xl font-semibold text-slate-900">Attempt History</h2>
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-xl font-semibold text-slate-900">Attempt History</h2>
+          {isAdmin && history.length > 0 && (
+            <button
+              onClick={downloadPDF}
+              className="inline-flex items-center gap-2 rounded-xl bg-teal-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-teal-600/20 transition hover:bg-teal-700"
+            >
+              <Download size={16} />
+              Download PDF
+            </button>
+          )}
+        </div>
 
         {loading ? (
           <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center text-slate-500">
