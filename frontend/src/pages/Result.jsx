@@ -15,8 +15,7 @@ function Result() {
   return (
     <div className="mx-auto w-full max-w-3xl space-y-6">
       <section className="rounded-3xl border border-white/50 bg-gradient-to-r from-teal-700 via-cyan-600 to-sky-600 p-7 text-white shadow-xl">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-100">Quiz Result</p>
-        <h1 className="mt-1 text-3xl font-semibold">{quizTitle}</h1>
+        <h1 className="mt-1 text-3xl font-semibold text-white">Quiz is submitted successfully</h1>
         {autoSubmitted ? (
           <p className="mt-2 text-sm text-cyan-50">Time ended, so your quiz was submitted automatically.</p>
         ) : (
